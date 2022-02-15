@@ -1,0 +1,100 @@
+body, html {
+  background-color: #e7e9f0;
+  color: #051747;
+  font-family: 'Quicksand', sans-serif;
+}
+
+.description {
+  width: 60%;
+  text-align: center;
+  padding-bottom: 50px;
+}
+
+
+h1 {
+  font-size: 45px;
+}
+
+#province {
+  background-color: #e7e9f0;
+  color: #e7e9f0;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+.data tr:nth-child(even){
+  background-color: #f2f2f2;
+  color: #535f80;
+}
+
+.App {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: auto;
+  width: 100%;
+}
+
+th {
+  font-weight: 700;
+  font-size: 18px;
+}
+
+table td:nth-child(1) {
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.data td, .data th {
+  border-bottom: 1px solid #c2c8db;
+  padding: 10px;
+}
+
+#small-screens {
+  display: none;
+}
+
+@media only screen and (min-width: 320px) and (max-width: 900px) {
+  #big-screen {
+    display: none;
+  }
+
+  #small-screens {
+    display: inline;
+  }
+
+  table {
+    width: 100%;
+    font-size: 15px;
+    margin-bottom: 20px;
+  }
+
+  th {
+    font-weight: 700;
+    font-size: 15px;
+  }
+
+  table td:nth-child(1) {
+    font-weight: 700;
+    font-size: 15px;
+    width: 90px;
+  }
+
+  h1 {
+    font-size: 30px;
+    text-align: center;
+  }
+
+  .description {
+    font-size: 15px;
+    width: 90%;
+  }
+
+  .data td, .data th {
+    border-bottom: 1px solid #c2c8db;
+    padding: 5px;
+  }
+}
