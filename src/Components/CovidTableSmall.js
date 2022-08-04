@@ -1,134 +1,230 @@
 import axios from 'axios';
 import React, {useState, useEffect} from 'react';
 
-const CovidTableSmall = () => {
-  const [data, setData] = useState([]);
 
-  //Get today's date using the JavaScript Date object.
-  let ourDate = new Date();
+const CovidTable = () => {
 
-  //Change it so that it is 7 days in the past.
-  let pastDate = ourDate.getDate() - 2;
-  ourDate.setDate(pastDate);
+    const [data, setData] = useState([]);
 
-  const convertDate = function(date) {
-    let dd = String(date.getDate()).padStart(2, '0');
-    var mm = String(date.getMonth() + 1).padStart(2, '0'); 
-    var yyyy =date.getFullYear();
-    return dd + '-' + mm + '-' + yyyy;
+    //Get today's date using the JavaScript Date object.
+    let ourDate = new Date();
+
+    //Change it so that it is 7 days in the past.
+    let pastDate = ourDate.getDate() - 2;
+    ourDate.setDate(pastDate);
+
+    const convertDate = function(date) {
+      let dd = String(date.getDate()).padStart(2, '0');
+      let mm = String(date.getMonth() + 1).padStart(2, '0'); 
+      let yyyy =date.getFullYear();
+      return yyyy + '-' + mm + '-' + dd;
+    }
+
+    const lastWeek = convertDate(ourDate);
+
+    // console.log("covid table last week", lastWeek)
+
+    const getCases = () => {
+      axios.get(`https://api.opencovid.ca/timeseries?after=${lastWeek}`)
+      .then((res) => {
+        setData(res.data.data.cases);
+      }).catch(err => {
+        console.log("error message!!!!!!!", err)
+      })
+    }
+
+    useEffect(() => {
+      getCases();
+    }, []);
+
+
+
+
+    function formatDate(date){
+
+      var dd = date.getDate();
+      var mm = date.getMonth()+1;
+      var yyyy = date.getFullYear();
+      if(dd<10) {dd='0'+dd}
+      if(mm<10) {mm='0'+mm}
+      date = yyyy+'-'+mm+'-'+dd;
+      return date
+   }
+
+
+
+    function Last2Days () {
+      var result = [];
+      for (var i=2; i>0; i--) {
+          var d = new Date();
+          d.setDate(d.getDate() - i);
+          result.push( formatDate(d) )
+      }
+  
+      return(result);
   }
 
-  const lastWeek = convertDate(ourDate);
+  const last2DaysArray = Last2Days();
 
-  console.log(lastWeek)
+  // VARIABLES CONTAINING EACH PROVINCE DATA
+  const alberta = data.filter(obj => obj.region === 'AB');
+  const bc = data.filter(obj => obj.region === 'BC');
+  const nb = data.filter(obj => obj.region === 'NB');
+  const nl = data.filter(obj => obj.region === 'NL');
+  const nwt = data.filter(obj => obj.region === 'NWT');
+  const ns = data.filter(obj => obj.region === 'Nova Scotia');
+  const on = data.filter(obj => obj.region === 'ON');
+  const pei = data.filter(obj => obj.region === 'PEI');
+  const qc = data.filter(obj => obj.region === 'QC');
+  const repatriated = data.filter(obj => obj.region === 'Repatriated');
+  const saskatchewan = data.filter(obj => obj.region === 'Saskatchewan');
+  const yk = data.filter(obj => obj.region === 'YK');
 
-  const getCases = () => {
-    axios.get(`https://api.opencovid.ca/timeseries?after=${lastWeek}`)
-    .then((res) => {
-      setData(res.data.active);
-    }).catch(err => {
-      console.log(err)
-    })
+  
+  
+  //FUNCTION TO CREATE ARRAY FOR TABLE VALUES
+  const valuesArrayFunction = function(prov) {
+    let table = {};
+    let tableArray = [];
+    for (let i=0; i<last2DaysArray.length; i++) {
+      let thisDate = last2DaysArray[i]
+      table[thisDate] = "";
+      table[thisDate] = "N/A"
+    }
+  
+    for(const property in table) {
+      for(let i=0; i<prov.length; i++) {
+        let thisProvDate = prov[i].date;
+        let thisProvValue = prov[i].value_daily;
+        if(thisProvDate === property) {
+          table[thisProvDate] = thisProvValue;
+        }
+      }
+    }
+
+    for(const prop in table) {
+      tableArray.push(table[prop]);
+    }
+
+    return tableArray;
+
   }
 
-  useEffect(() => {
-    getCases();
-  }, []);
-
+  
  
+  return (
+    <div>
+      <table className="data" id="small-screens">
+        <tbody>
 
-  console.log(data);
-
-return (
-  <div>
-    <table className="data" id="small-screens">
-      <tr>
-        <th id="province">Province</th>
-        {data.filter(obj => obj.province === 'Alberta').map(filteredData => (
-          <th scope="col">{filteredData.date_active}</th>
-        ))}
-      </tr>
-      <tr>
-        <td >Alberta</td>
-        {data.filter(obj => obj.province === 'Alberta').map(filteredData => (
-          <td>{filteredData.active_cases}</td>
-        ))}
-      </tr>
-      <tr>
-      <td className="province">Manitoba</td>
-        {data.filter(obj => obj.province === 'Manitoba').map(filteredData => (
-          <td>{filteredData.active_cases}</td>
-        ))}
-      </tr>
-      <tr>
-      <td>British Columbia</td>
-        {data.filter(obj => obj.province === 'BC').map(filteredData => (
-          <td>{filteredData.active_cases}</td>
-        ))}
-      </tr>
-      <tr>
-      <td>New Brunswich</td>
-        {data.filter(obj => obj.province === 'New Brunswick').map(filteredData => (
-          <td>{filteredData.active_cases}</td>
-        ))}
-      </tr>
-      <tr>
-      <td>Newfoundland and Labrador</td>
-        {data.filter(obj => obj.province === 'NL').map(filteredData => (
-          <td>{filteredData.active_cases}</td>
-        ))}
-      </tr>
-      <tr>
-      <td>Nova Scotia</td>
-        {data.filter(obj => obj.province === 'Nova Scotia').map(filteredData => (
-          <td>{filteredData.active_cases}</td>
-        ))}
-      </tr>
-      <tr>
-      <td>Northwest Territories</td>
-        {data.filter(obj => obj.province === 'NWT').map(filteredData => (
-          <td>{filteredData.active_cases}</td>
-        ))}
-      </tr>
-      <tr>
-      <td>Ontario</td>
-        {data.filter(obj => obj.province === 'Ontario').map(filteredData => (
-          <td>{filteredData.active_cases}</td>
-        ))}
-      </tr>
-      <tr>
-      <td>Prince Edward Island</td>
-        {data.filter(obj => obj.province === 'PEI').map(filteredData => (
-          <td>{filteredData.active_cases}</td>
-        ))}
-      </tr>
-      <tr>
-      <td>Quebec</td>
-        {data.filter(obj => obj.province === 'Quebec').map(filteredData => (
-          <td>{filteredData.active_cases}</td>
-        ))}
-      </tr>
-      <tr>
-      <td>Repatriated</td>
-        {data.filter(obj => obj.province === 'Repatriated').map(filteredData => (
-          <td>{filteredData.active_cases}</td>
-        ))}
-      </tr>
-      <tr>
-      <td>Saskatchewan</td>
-        {data.filter(obj => obj.province === 'Saskatchewan').map(filteredData => (
-          <td>{filteredData.active_cases}</td>
-        ))}
-      </tr>
-      <tr>
-      <td>Yukon</td>
-        {data.filter(obj => obj.province === 'Yukon').map(filteredData => (
-          <td>{filteredData.active_cases}</td>
-        ))}
-      </tr>
-    </table>  
-  </div>
-)
+        <tr>
+          <th id="province">Province</th>
+          {
+            Last2Days().map(mappedDates => (
+              <th>{mappedDates}</th>
+            ))
+          }
+        </tr>
+        <tr>
+          <td >Alberta</td>
+          {
+            valuesArrayFunction(alberta).map(dateData => (
+              <td>{dateData}</td>
+            ))
+          }
+        </tr>
+        <tr>
+        <td>British Columbia</td>
+        {
+            valuesArrayFunction(bc).map(dateData => (
+              <td>{dateData}</td>
+            ))
+          }
+        </tr>
+        <tr>
+        <td>New Brunswich</td>
+          {
+            valuesArrayFunction(nb).map(dateData => (
+              <td>{dateData}</td>
+            ))
+          }
+        </tr>
+        <tr>
+        <td>Newfoundland and Labrador</td>
+        {
+            valuesArrayFunction(nl).map(dateData => (
+              <td>{dateData}</td>
+            ))
+          }
+        </tr>
+        <tr>
+        <td>Nova Scotia</td>
+        {
+            valuesArrayFunction(ns).map(dateData => (
+              <td>{dateData}</td>
+            ))
+          }
+        </tr>
+        <tr>
+        <td>Northwest Territories</td>
+        {
+            valuesArrayFunction(nwt).map(dateData => (
+              <td>{dateData}</td>
+            ))
+          }
+        </tr>
+        <tr>
+        <td>Ontario</td>
+        {
+            valuesArrayFunction(on).map(dateData => (
+              <td>{dateData}</td>
+            ))
+          }
+        </tr>
+        <tr>
+        <td>Prince Edward Island</td>
+        {
+            valuesArrayFunction(pei).map(dateData => (
+              <td>{dateData}</td>
+            ))
+          }
+        </tr>
+        <tr>
+        <td>Quebec</td>
+        {
+            valuesArrayFunction(qc).map(dateData => (
+              <td>{dateData}</td>
+            ))
+          }
+        </tr>
+        <tr>
+        <td>Repatriated</td>
+        {
+            valuesArrayFunction(repatriated).map(dateData => (
+              <td>{dateData}</td>
+            ))
+          }
+        </tr>
+        <tr>
+        <td>Saskatchewan</td>
+        {
+            valuesArrayFunction(saskatchewan).map(dateData => (
+              <td>{dateData}</td>
+            ))
+          }
+        </tr>
+        <tr>
+        <td>Yukon</td>
+        {
+            valuesArrayFunction(yk).map(dateData => (
+              <td>{dateData}</td>
+            ))
+          }
+        </tr>
+        </tbody>
+      </table>  
+    </div>
+  )
 }
 
-export default CovidTableSmall
+export default CovidTable

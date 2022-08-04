@@ -1,3 +1,4 @@
+import { tab } from '@testing-library/user-event/dist/tab';
 import axios from 'axios';
 import React, {useState, useEffect} from 'react';
 
@@ -15,21 +16,21 @@ const CovidTable = () => {
 
     const convertDate = function(date) {
       let dd = String(date.getDate()).padStart(2, '0');
-      var mm = String(date.getMonth() + 1).padStart(2, '0'); 
-      var yyyy =date.getFullYear();
-      return dd + '-' + mm + '-' + yyyy;
+      let mm = String(date.getMonth() + 1).padStart(2, '0'); 
+      let yyyy =date.getFullYear();
+      return yyyy + '-' + mm + '-' + dd;
     }
 
     const lastWeek = convertDate(ourDate);
 
-    console.log(lastWeek)
+    // console.log("covid table last week", lastWeek)
 
     const getCases = () => {
       axios.get(`https://api.opencovid.ca/timeseries?after=${lastWeek}`)
       .then((res) => {
-        setData(res.data.active);
+        setData(res.data.data.cases);
       }).catch(err => {
-        console.log(err)
+        console.log("error message!!!!!!!", err)
       })
     }
 
@@ -37,97 +38,191 @@ const CovidTable = () => {
       getCases();
     }, []);
 
-   
 
-    console.log(data);
 
+
+    function formatDate(date){
+
+      var dd = date.getDate();
+      var mm = date.getMonth()+1;
+      var yyyy = date.getFullYear();
+      if(dd<10) {dd='0'+dd}
+      if(mm<10) {mm='0'+mm}
+      date = yyyy+'-'+mm+'-'+dd;
+      return date
+   }
+
+
+
+    function Last7Days () {
+      var result = [];
+      for (var i=7; i>0; i--) {
+          var d = new Date();
+          d.setDate(d.getDate() - i);
+          result.push( formatDate(d) )
+      }
+  
+      return(result);
+  }
+
+  const last7DaysArray = Last7Days();
+
+  // VARIABLES CONTAINING EACH PROVINCE DATA
+  const alberta = data.filter(obj => obj.region === 'AB');
+  const bc = data.filter(obj => obj.region === 'BC');
+  const nb = data.filter(obj => obj.region === 'NB');
+  const nl = data.filter(obj => obj.region === 'NL');
+  const nwt = data.filter(obj => obj.region === 'NWT');
+  const ns = data.filter(obj => obj.region === 'Nova Scotia');
+  const on = data.filter(obj => obj.region === 'ON');
+  const pei = data.filter(obj => obj.region === 'PEI');
+  const qc = data.filter(obj => obj.region === 'QC');
+  const repatriated = data.filter(obj => obj.region === 'Repatriated');
+  const saskatchewan = data.filter(obj => obj.region === 'Saskatchewan');
+  const yk = data.filter(obj => obj.region === 'YK');
+
+  
+  
+  //FUNCTION TO CREATE ARRAY FOR TABLE VALUES
+  const valuesArrayFunction = function(prov) {
+    let table = {};
+    let tableArray = [];
+    for (let i=0; i<last7DaysArray.length; i++) {
+      let thisDate = last7DaysArray[i]
+      table[thisDate] = "";
+      table[thisDate] = "N/A"
+    }
+  
+    for(const property in table) {
+      for(let i=0; i<prov.length; i++) {
+        let thisProvDate = prov[i].date;
+        let thisProvValue = prov[i].value_daily;
+        if(thisProvDate === property) {
+          table[thisProvDate] = thisProvValue;
+        }
+      }
+    }
+
+    for(const prop in table) {
+      tableArray.push(table[prop]);
+    }
+
+    return tableArray;
+
+  }
+
+  
+ 
   return (
     <div>
       <table className="data" id="big-screen">
+        <tbody>
+
         <tr>
           <th id="province">Province</th>
-          {data.filter(obj => obj.province === 'Alberta').map(filteredData => (
-            <th scope="col">{filteredData.date_active}</th>
-          ))}
+          {
+            Last7Days().map(mappedDates => (
+              <th>{mappedDates}</th>
+            ))
+          }
         </tr>
         <tr>
           <td >Alberta</td>
-          {data.filter(obj => obj.province === 'Alberta').map(filteredData => (
-            <td>{filteredData.active_cases}</td>
-          ))}
-        </tr>
-        <tr>
-        <td className="province">Manitoba</td>
-          {data.filter(obj => obj.province === 'Manitoba').map(filteredData => (
-            <td>{filteredData.active_cases}</td>
-          ))}
+          {
+            valuesArrayFunction(alberta).map(dateData => (
+              <td>{dateData}</td>
+            ))
+          }
         </tr>
         <tr>
         <td>British Columbia</td>
-          {data.filter(obj => obj.province === 'BC').map(filteredData => (
-            <td>{filteredData.active_cases}</td>
-          ))}
+        {
+            valuesArrayFunction(bc).map(dateData => (
+              <td>{dateData}</td>
+            ))
+          }
         </tr>
         <tr>
         <td>New Brunswich</td>
-          {data.filter(obj => obj.province === 'New Brunswick').map(filteredData => (
-            <td>{filteredData.active_cases}</td>
-          ))}
+          {
+            valuesArrayFunction(nb).map(dateData => (
+              <td>{dateData}</td>
+            ))
+          }
         </tr>
         <tr>
         <td>Newfoundland and Labrador</td>
-          {data.filter(obj => obj.province === 'NL').map(filteredData => (
-            <td>{filteredData.active_cases}</td>
-          ))}
+        {
+            valuesArrayFunction(nl).map(dateData => (
+              <td>{dateData}</td>
+            ))
+          }
         </tr>
         <tr>
         <td>Nova Scotia</td>
-          {data.filter(obj => obj.province === 'Nova Scotia').map(filteredData => (
-            <td>{filteredData.active_cases}</td>
-          ))}
+        {
+            valuesArrayFunction(ns).map(dateData => (
+              <td>{dateData}</td>
+            ))
+          }
         </tr>
         <tr>
         <td>Northwest Territories</td>
-          {data.filter(obj => obj.province === 'NWT').map(filteredData => (
-            <td>{filteredData.active_cases}</td>
-          ))}
+        {
+            valuesArrayFunction(nwt).map(dateData => (
+              <td>{dateData}</td>
+            ))
+          }
         </tr>
         <tr>
         <td>Ontario</td>
-          {data.filter(obj => obj.province === 'Ontario').map(filteredData => (
-            <td>{filteredData.active_cases}</td>
-          ))}
+        {
+            valuesArrayFunction(on).map(dateData => (
+              <td>{dateData}</td>
+            ))
+          }
         </tr>
         <tr>
         <td>Prince Edward Island</td>
-          {data.filter(obj => obj.province === 'PEI').map(filteredData => (
-            <td>{filteredData.active_cases}</td>
-          ))}
+        {
+            valuesArrayFunction(pei).map(dateData => (
+              <td>{dateData}</td>
+            ))
+          }
         </tr>
         <tr>
         <td>Quebec</td>
-          {data.filter(obj => obj.province === 'Quebec').map(filteredData => (
-            <td>{filteredData.active_cases}</td>
-          ))}
+        {
+            valuesArrayFunction(qc).map(dateData => (
+              <td>{dateData}</td>
+            ))
+          }
         </tr>
         <tr>
         <td>Repatriated</td>
-          {data.filter(obj => obj.province === 'Repatriated').map(filteredData => (
-            <td>{filteredData.active_cases}</td>
-          ))}
+        {
+            valuesArrayFunction(repatriated).map(dateData => (
+              <td>{dateData}</td>
+            ))
+          }
         </tr>
         <tr>
         <td>Saskatchewan</td>
-          {data.filter(obj => obj.province === 'Saskatchewan').map(filteredData => (
-            <td>{filteredData.active_cases}</td>
-          ))}
+        {
+            valuesArrayFunction(saskatchewan).map(dateData => (
+              <td>{dateData}</td>
+            ))
+          }
         </tr>
         <tr>
         <td>Yukon</td>
-          {data.filter(obj => obj.province === 'Yukon').map(filteredData => (
-            <td>{filteredData.active_cases}</td>
-          ))}
+        {
+            valuesArrayFunction(yk).map(dateData => (
+              <td>{dateData}</td>
+            ))
+          }
         </tr>
+        </tbody>
       </table>  
     </div>
   )
