@@ -79,7 +79,7 @@ const CovidTable = () => {
   const qc = data.filter(obj => obj.region === 'QC');
   const repatriated = data.filter(obj => obj.region === 'Repatriated');
   const saskatchewan = data.filter(obj => obj.region === 'Saskatchewan');
-  const yk = data.filter(obj => obj.region === 'YK');
+  const yk = data.filter(obj => obj.region === 'YT');
 
   
   
